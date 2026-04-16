@@ -1,60 +1,41 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:task_app/models/task_model.dart';
+import 'package:task_app/models/task_management.dart';
+import 'package:task_app/widgets/empty_tasks_section.dart';
+import 'package:task_app/widgets/task_card.dart';
 
-class TasksSection extends StatelessWidget {
-  const TasksSection({
-    super.key,
-    required this.tasks,
-    required this.deleteTask,
-    required this.makeTaskCompleted,
-  });
-  final void Function(int) deleteTask;
-  final void Function(int) makeTaskCompleted;
-  final List<TaskModel> tasks;
+class TasksSection extends StatefulWidget {
+  const TasksSection({super.key, required this.taskManagement});
+  final TaskManagement taskManagement;
 
   @override
+  State<TasksSection> createState() => _TasksSectionState();
+}
+
+class _TasksSectionState extends State<TasksSection> {
+  @override
   Widget build(BuildContext context) {
-    return ListView.separated(
-      itemCount: tasks.length,
-      itemBuilder: (context, index) {
-        return Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Card(
-            elevation: 3,
-            child: ListTile(
-              tileColor: Color(0xffEFF5F3),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              leading: IconButton(
-                icon: tasks[index].isCompleted
-                    ? Icon(Icons.check_box, color: Color(0xff026A5E))
-                    : Icon(Icons.check_box_outline_blank),
-                onPressed: () => makeTaskCompleted(index),
-              ),
-              title: Text(
-                tasks[index].title,
-                style: TextStyle(
-                  decoration: tasks[index].isCompleted
-                      ? TextDecoration.lineThrough
-                      : TextDecoration.none,
-                ),
-              ),
-              subtitle: Text(
-                DateFormat('yyyy-MM-dd').format(tasks[index].startDate),
-              ),
-              trailing: IconButton(
-                icon: Icon(Icons.delete_outline, color: Colors.red),
-                onPressed: () => deleteTask(index),
-              ),
-            ),
-          ),
-        );
-      },
-      separatorBuilder: (BuildContext context, int index) {
-        return SizedBox(height: 0);
-      },
-    );
+    return widget.taskManagement.isEmpty
+        ? const EmptyTasksSection()
+        : ListView.separated(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 132),
+            itemCount: widget.taskManagement.taskCount,
+            itemBuilder: (context, index) {
+              return TaskCard(
+                tasks: widget.taskManagement.tasks,
+                index: index,
+                deletedTask: () {
+                  setState(() {
+                    widget.taskManagement.deletedTask(
+                      widget.taskManagement.tasks[index],
+                    );
+                  });
+                },
+              );
+            },
+            separatorBuilder: (BuildContext context, int index) {
+              return const SizedBox(height: 14);
+            },
+          );
   }
 }
+
